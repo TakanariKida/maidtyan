@@ -5,6 +5,8 @@ require 'date'
 
 require "./MaidMail.rb"
 require "./search_today.rb"
+require "./Google_calender.rb"
+require "./weather.rb"
 load "config.rb"
 
 def dots()
@@ -21,7 +23,7 @@ gmail = Gmail.new(@username,@password)
 dots()
 
 #Workフォルダ内の未読を調べる
-mail =  gmail.mailbox('Work/maid-tyan').emails(:unread).map do |mail|
+mail =  gmail.mailbox("#{@mail_label}").emails(:unread).map do |mail|
   dots()
   #件名があるときだけ、
   if mail.subject != nil 
@@ -44,27 +46,42 @@ mail =  gmail.mailbox('Work/maid-tyan').emails(:unread).map do |mail|
     end
     mail.mark(:unread) #使わなかったメールを未読に
   end
-  
 end
+gmail.logout
 
 dots()
+
+
+
+if Google_calender() != 0
+	fullSchedule += Google_calender()
+	mailFlag += 1
+end
+dots()
+
+maidSerif = MaidMail.new(@address)
+
+
 #予定のあるときのみ送信
 if mailFlag > 0
-	maidSerif = MaidMail.new(@address)
 
-dots()
+fullSchedule += "\n" 
+fullSchedule +=  weather() # 天気予報
 
-begin
+
+gmail = Gmail.new(@username,@password)
 	#メール送信
 	gmail.deliver do
 		to maidSerif.sendTo
 		subject maidSerif.sub
 		body maidSerif.text(fullSchedule)
 	end
-end
+gmail.logout
+
 
 	#出力結果テスト用
 	#maidSerif.showMail (fullSchedule)
 
-
 end
+
+
