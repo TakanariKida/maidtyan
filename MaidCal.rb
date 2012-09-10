@@ -120,7 +120,7 @@ begin
 		time_st = Time.mktime(date.year, date.month, date.day, $1.to_i,$2.to_i, 0, 0)
 		time_en = time_st + 3600 # 3600秒 = 1時間
 		text = $` + $'
-	when /([0-9]+)時/
+	when /([0-9]+)時(-|から|～|－|)/
 		time_st = Time.mktime(date.year, date.month, date.day, $1.to_i,00, 0, 0)
 		time_en = time_st + 3600 # 3600秒 = 1時間
 		text = $` + $'
@@ -182,19 +182,17 @@ while (one_more == 1)
 			text = $` + $'
 	end
 	
-	if err > 5 # 無限ループ回避
+
+	if title =~ /^\s*$/ && err > 5 # タイトルに記入なし
 		schedule_check += "ERROR:タイトルが入力できませんでした\n"
 		schedule_check += "私にもわかるようにして、送りなおしてほしいです ><\n"
 		err_code = 1
 		one_more = 0
-	end
-
-	if title == "" # タイトルに記入なし
+	elsif  title =~ /^\s*$/  # タイトルに記入なし
 		err += 1
-		next
+	else
+		one_more = 0
 	end
-	
-	one_more = 0
 end
 
 
@@ -217,6 +215,7 @@ schedule_check += "終了時刻 ： #{time_en}" + "\n"
 schedule_check += "タイトル ： #{title}" + "\n"
 schedule_check += "場所     ： #{location}" + "\n"
 schedule_check += "\n"
+#schedule_check += "*************************\n#{text}\n*************************\n"
 
 # ------------------------------
 # Googleアカウント設定

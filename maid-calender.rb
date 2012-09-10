@@ -3,7 +3,9 @@ require 'gmail' # https://github.com/dcparker/ruby-gmail
 require 'kconv'
 require 'date'
 
+require "./MaidMail.rb"
 require "./MaidCal.rb"
+require "./gmail_send.rb"
 load "config.rb"
 
 def dots()
@@ -15,13 +17,14 @@ mailFlag = 0			#メールを送信するかしないかのフラグ
 schedule_check = ""	#スケジュールリスト
 dots()
 
-#gmailにログイン
+#gmailにログインb
 gmail = Gmail.new(@username,@password)
 dots()
 
 #Workフォルダ内の未読を調べる
 mail = gmail.mailbox('Work/maid-tyan').emails(:unread).map do |mail|
 	dots()
+	schedule = ""
 	begin
 		if !mail.text_part && !mail.html_part
 			if mail.body.decoded.encode("UTF-8", mail.charset) != ""
@@ -63,21 +66,7 @@ send_text = <<-EOS
 EOS
 #*******メール本文**********
 
-#メール送信
-address = @address
-begin
-	gmail.deliver do
-		to address
-		subject "スケジュール登録しました"
-		body send_text
-	end
-end
 
-=begin #出力結果テスト用
-	puts
-	puts "to #{@address}"
-	puts "subject スケジュール登録しました"
-	puts "body #{send_text}"
-=end
+gmail_send(send_text)
 puts "sended"
 end

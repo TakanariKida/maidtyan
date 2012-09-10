@@ -24,7 +24,10 @@ load "config.rb"
 				cal_sc += "・" + event.title + "\n"
 				cal_sc_count += 1
 				if event.st.to_s.slice(11..18) != "00:00:00"
-					cal_sc +=  " " + event.st.to_s.slice(11..18) + " ～ \n"
+					timetmp = event.st.to_s.slice(11..12)
+					timetmp = timetmp.to_i
+					timetmp += 9
+					cal_sc +=  " " + timetmp.to_s + event.st.to_s.slice(13..15) + " ～ \n" #
 				end
 				if event.where != ""
 					cal_sc += "   ＠ " + event.where + "\n"
