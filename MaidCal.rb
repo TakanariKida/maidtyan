@@ -23,6 +23,11 @@ location = ''
 
 if subject != nil
 	text = " " + subject + text + " " # $` + $'で引っかからないよう空白
+else
+	text = " " + text + " " # $` + $'で引っかからないよう空白
+end
+while /\n/ =~ text
+	text = text.sub(/\n/, " ")
 end
 
 # ------------------------------
@@ -108,22 +113,29 @@ require 'time'
 while (one_more == 1)
 begin
 	case text
-	when /([0-9]+):([0-9]+)(-|から|～|－)([0-9]+):([0-9]+)/
-		time_st = Time.mktime(date.year, date.month, date.day, $1.to_i, $2.to_i, 0, 0)
-		time_en = Time.mktime(date.year, date.month, date.day, $4.to_i, $5.to_i, 0, 0)
-	text = $` + $'
-	when /([0-9]+)時(-|から|～|－)([0-9]+)時/
+	when /([0-9]+)(:|：)([0-9]+)(～|から|-|－)([0-9]+)(:|：)([0-9]+)/
+		time_st = Time.mktime(date.year, date.month, date.day, $1.to_i, $3.to_i, 0, 0)
+		time_en = Time.mktime(date.year, date.month, date.day, $5.to_i, $7.to_i, 0, 0)
+		text = $` + $'
+	when /([0-9]+)時(～|から|-|－)([0-9]+)時/
 		time_st = Time.mktime(date.year, date.month, date.day, $1.to_i, 00, 0, 0)
 		time_en = Time.mktime(date.year, date.month, date.day, $3.to_i, 00, 0, 0)
 		text = $` + $'
-	when /([0-9]+):([0-9]+)/
-		time_st = Time.mktime(date.year, date.month, date.day, $1.to_i,$2.to_i, 0, 0)
+	when /([0-9]+)時半(-|から|に|～|－|)/
+		time_st = Time.mktime(date.year, date.month, date.day, $1.to_i,30, 0, 0)
+		time_en = time_st + 3600 # 3600秒 = 1時間
+		text = $` + $'		
+	end
+	case text	
+	when /([0-9]+)(:|：)([0-9]+)/
+		time_st = Time.mktime(date.year, date.month, date.day, $1.to_i,$3.to_i, 0, 0)
 		time_en = time_st + 3600 # 3600秒 = 1時間
 		text = $` + $'
 	when /([0-9]+)時(-|から|～|－|)/
 		time_st = Time.mktime(date.year, date.month, date.day, $1.to_i,00, 0, 0)
 		time_en = time_st + 3600 # 3600秒 = 1時間
 		text = $` + $'
+
 	end
 rescue ArgumentError
 	next
@@ -138,11 +150,14 @@ one_more = 1
 # 場所をパースする
 begin
 	case text
-	when /(＠|場(　|)所：|会場：)(\S+)/
-	location = $3
+	when /(＠|@|場(\s*|)所(\s*|　*|)：(\s*|　*|)|会場(\s*|)：(\s*|))(\S+)\s/
+	location = $7
 	text = $` + $'
-	when /((場所|会場)は(,|，|、|))(\S+)(に|で|。)/
+	when /((場所|会場)は(,|，|、|))(\S+)(に|で|。|集合)/
 	location = $4
+	text = $` + $'
+	when /(に|，|、|)(\S+)((に|で|)集合)(で|します|なので|に)/
+	location = $2
 	text = $` + $'
 	end
 end
@@ -154,8 +169,8 @@ while (one_more == 1)
 #*************
 # 転送メール用
 	case text
-		when /(\S+)(について|の件)/
-			title = $1
+		when /(〉|\)|）|』|】|、|\s)(\S+)(について|の件|の(ご|御|)案内)/
+			title = $2
 			text = $` + $'
 		when /(に|、|にて)(\S+)(を|の件|に)/
 			title = $2

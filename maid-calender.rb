@@ -26,6 +26,8 @@ mail = gmail.mailbox('Work/maid-tyan').emails(:unread).map do |mail|
 	dots()
 	schedule = ""
 	begin
+	schedule += mail.body.decoded.encode("UTF-8", mail.charset)
+=begin
 		if !mail.text_part && !mail.html_part
 			if mail.body.decoded.encode("UTF-8", mail.charset) != ""
 				schedule += mail.body.decoded.encode("UTF-8", mail.charset)
@@ -35,7 +37,11 @@ mail = gmail.mailbox('Work/maid-tyan').emails(:unread).map do |mail|
 				schedule += mail.html_part.decoded.encode("UTF-8", mail.charset)
 			end
 		end
-		
+=end
+puts schedule
+puts schedule.length
+
+
 		#本文があるときだけ、
 		if schedule.length > 0
 			dots()
@@ -51,6 +57,7 @@ mail = gmail.mailbox('Work/maid-tyan').emails(:unread).map do |mail|
 end
 
 dots()
+puts mailFlag
 
 #予定のあるときのみ送信
 if mailFlag > 0
@@ -66,7 +73,7 @@ send_text = <<-EOS
 EOS
 #*******メール本文**********
 
-
+#puts send_text
 gmail_send(send_text)
 puts "sended"
 end
