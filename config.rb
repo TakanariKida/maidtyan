@@ -1,6 +1,6 @@
 ﻿#coding: utf-8
 
-@username='***@gmail.com' #gmailのアドレス
+@username='hogehoge@gmail.com' #gmailのアドレス
 @password='***' #gmailのパスワード
 @mail_label = 'Work/maid-tyan'
 
